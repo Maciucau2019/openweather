@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_141565_helloworl.getData</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>getData</name>
+        <script><![CDATA[var getData = Class.create();
+getData.prototype = {
+    initialize: function() {
+        CITY_TABLE = "x_141565_helloworl_city";
+
+        var cities = new GlideRecord(CITY_TABLE);
+        cities.query();
+
+        while (cities.next()) {
+            var restMessage = new sn_ws.RESTMessageV2("Weather", "GET");
+            restMessage.setQueryParameter("q", cities.name);
+            restMessage.setQueryParameter("APPID", gs.getProperty("x_141565_helloworl.REST Data"));
+            var response = restMessage.execute();
+            var responseBody = response.getBody();
+            var httpsStatus = response.getStatusCode();
+
+            if (httpsStatus == 200) {
+                var parsedResponse = JSON.parse(responseBody);
+				
+			
+				
+                var stagingTable = new GlideRecord("x_141565_helloworl_staging_weather_data");
+                stagingTable.initialize();
+				stagingTable.setValue("city_name",parsedResponse.name);
+				stagingTable.setValue("clouds".parsedResponse.clouds.all);
+				stagingTable.setValue("humidity".parsedResponse.main.humidity);
+				stagingTable.setValue("pressure".parsedResponse.main.pressure);
+				stagingTable.setValue("temperature".parsedResponse.main.temp);
+				stagingTable.setValue("wind_speed".parsedResponse.wind.speed);
+				stagingTable.update();
+				
+            }
+			else {gs.log("Error");}
+
+        }
+
+    },
+
+    type: 'getData'
+};]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>vlad.saracut</sys_created_by>
+        <sys_created_on>2023-05-05 11:38:55</sys_created_on>
+        <sys_id>44eba0ba47222110f35e7ac8f36d43c3</sys_id>
+        <sys_mod_count>4</sys_mod_count>
+        <sys_name>getData</sys_name>
+        <sys_package display_value="HelloWorld" source="x_141565_helloworl">a370559b47a42110f35e7ac8f36d434c</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="HelloWorld">a370559b47a42110f35e7ac8f36d434c</sys_scope>
+        <sys_update_name>sys_script_include_44eba0ba47222110f35e7ac8f36d43c3</sys_update_name>
+        <sys_updated_by>vlad.saracut</sys_updated_by>
+        <sys_updated_on>2023-05-05 14:03:28</sys_updated_on>
+    </sys_script_include>
+</record_update>
