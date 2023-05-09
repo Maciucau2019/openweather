@@ -22,7 +22,7 @@ getData.prototype = {
         while (cityGr.next()) {
             var restMessage = new sn_ws.RESTMessageV2("Weather", "GET");
             restMessage.setQueryParameter("q", cityGr.name);
-            restMessage.setQueryParameter('APPID', "13949738ec4ad8e0e8d0fe152e9f67b8");
+            restMessage.setQueryParameter('APPID', gs.getProperty('x_141565_helloworl.Data'));
             var response = restMessage.execute();
             var responseBody = response.getBody();
 
@@ -39,9 +39,6 @@ getData.prototype = {
                 var parsedResponse = JSON.parse(responseBody);
                 stagingGr.initialize();
                 for (var i in parsedResponse) {
-
-
-
                     if (typeof parsedResponse[i] != "object") {
                         stagingGr.setValue("" + i, parsedResponse[i]);
                     } else {
@@ -59,12 +56,12 @@ getData.prototype = {
         //create import set
         var igr = new GlideRecord("sys_import_set");
         igr.addQuery("mode", "asynchronous");
-        igr.addQuery("table_name", "x_141565_helloworl_staging_weather_data");
+        igr.addQuery("table_name", gs.getProperty('x_141565_helloworl.SourceStagingTable'));
         igr.addQuery("state", "loading");
         igr.query();
         //transform map finded
         var mapGR = new GlideRecord("sys_transform_map");
-        mapGR.addEncodedQuery('source_table=x_141565_helloworl_staging_weather_data^name=Weather Transformation');
+        mapGR.addEncodedQuery(gs.getProperty('x_141565_helloworl.TransformMapData'));
         mapGR.addActiveQuery();
         mapGR.query();
 
@@ -93,13 +90,13 @@ getData.prototype = {
         <sys_created_by>vlad.saracut</sys_created_by>
         <sys_created_on>2023-05-05 11:38:55</sys_created_on>
         <sys_id>44eba0ba47222110f35e7ac8f36d43c3</sys_id>
-        <sys_mod_count>10</sys_mod_count>
+        <sys_mod_count>12</sys_mod_count>
         <sys_name>getData</sys_name>
         <sys_package display_value="HelloWorld" source="x_141565_helloworl">a370559b47a42110f35e7ac8f36d434c</sys_package>
         <sys_policy>read</sys_policy>
         <sys_scope display_value="HelloWorld">a370559b47a42110f35e7ac8f36d434c</sys_scope>
         <sys_update_name>sys_script_include_44eba0ba47222110f35e7ac8f36d43c3</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2023-05-09 10:31:40</sys_updated_on>
+        <sys_updated_on>2023-05-09 14:00:52</sys_updated_on>
     </sys_script_include>
 </record_update>
