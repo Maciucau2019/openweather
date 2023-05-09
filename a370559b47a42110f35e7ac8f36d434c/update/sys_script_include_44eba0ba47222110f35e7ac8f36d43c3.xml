@@ -9,43 +9,82 @@
         <name>getData</name>
         <script><![CDATA[var getData = Class.create();
 getData.prototype = {
-    initialize: function() {  
-	
-	},
-	process: function() {
+    initialize: function() {
+
+    },
+    process: function() {
         CITY_TABLE = "x_141565_helloworl_city";
+        var cityGr = new GlideRecord(CITY_TABLE);
+        cityGr.query();
 
-        var cities = new GlideRecord(CITY_TABLE);
-        cities.query();
 
-        while (cities.next()) {
+
+        while (cityGr.next()) {
             var restMessage = new sn_ws.RESTMessageV2("Weather", "GET");
-            restMessage.setQueryParameter("q", cities.name);
-            restMessage.setQueryParameter("APPID", gs.getProperty("x_141565_helloworl.REST Data"));
+            restMessage.setQueryParameter("q", cityGr.name);
+            restMessage.setQueryParameter('APPID', "13949738ec4ad8e0e8d0fe152e9f67b8");
             var response = restMessage.execute();
             var responseBody = response.getBody();
-            var httpsStatus = response.getStatusCode();
 
-            if (httpsStatus == 200) {
+
+
+            var stagingGr = new GlideRecord("x_141565_helloworl_staging_weather_data");
+
+
+            //gs.info(response.getStatusCode);
+            //gs.info(responseBody);
+
+            if (response.getStatusCode() == 200) {
+
                 var parsedResponse = JSON.parse(responseBody);
-				
-			
-				
-                var stagingTable = new GlideRecord("x_141565_helloworl_staging_weather_data");
-                stagingTable.initialize();
-				stagingTable.setValue("city_name",parsedResponse.name);
-				stagingTable.setValue("clouds".parsedResponse.clouds.all);
-				stagingTable.setValue("humidity".parsedResponse.main.humidity);
-				stagingTable.setValue("pressure".parsedResponse.main.pressure);
-				stagingTable.setValue("temperature".parsedResponse.main.temp);
-				stagingTable.setValue("wind_speed".parsedResponse.wind.speed);
-				stagingTable.update();
-				
+                stagingGr.initialize();
+                for (var i in parsedResponse) {
+
+
+
+                    if (typeof parsedResponse[i] != "object") {
+                        stagingGr.setValue("" + i, parsedResponse[i]);
+                    } else {
+                        for (var j in parsedResponse[i]) {
+                            stagingGr.setValue("" + j, parsedResponse[i][j]);
+                        }
+                    }
+                }
+                stagingGr.insert();
+
+            } else {
+                gs.log("Error getting weather data for city " + cityGr.getValue("u_city_name") + ". Response status code: " + response.getStatusCode());
             }
-			else {gs.log("Error");}
+        }
+        //create import set
+        var igr = new GlideRecord("sys_import_set");
+        igr.addQuery("mode", "asynchronous");
+        igr.addQuery("table_name", "x_141565_helloworl_staging_weather_data");
+        igr.addQuery("state", "loading");
+        igr.query();
+        //transform map finded
+        var mapGR = new GlideRecord("sys_transform_map");
+        mapGR.addEncodedQuery('source_table=x_141565_helloworl_staging_weather_data^name=Weather Transformation');
+        mapGR.addActiveQuery();
+        mapGR.query();
+
+        var mapsList = [];
+        while (mapGR.next())
+            mapsList.push(mapGR.getUniqueValue());
+        var maps = mapsList.join();
+
+        while (igr.next()) {
+            //transform
+
+            var t = new GlideImportSetTransformerWorker(igr.sys_id, maps);
+            t.setProgressName("Transforming: " + igr.number);
+            t.setBackground(true);
+            t.start();
+
+
 
         }
-	
+
     },
 
     type: 'getData'
@@ -54,13 +93,13 @@ getData.prototype = {
         <sys_created_by>vlad.saracut</sys_created_by>
         <sys_created_on>2023-05-05 11:38:55</sys_created_on>
         <sys_id>44eba0ba47222110f35e7ac8f36d43c3</sys_id>
-        <sys_mod_count>5</sys_mod_count>
+        <sys_mod_count>10</sys_mod_count>
         <sys_name>getData</sys_name>
         <sys_package display_value="HelloWorld" source="x_141565_helloworl">a370559b47a42110f35e7ac8f36d434c</sys_package>
         <sys_policy>read</sys_policy>
         <sys_scope display_value="HelloWorld">a370559b47a42110f35e7ac8f36d434c</sys_scope>
         <sys_update_name>sys_script_include_44eba0ba47222110f35e7ac8f36d43c3</sys_update_name>
         <sys_updated_by>admin</sys_updated_by>
-        <sys_updated_on>2023-05-08 07:52:11</sys_updated_on>
+        <sys_updated_on>2023-05-09 10:31:40</sys_updated_on>
     </sys_script_include>
 </record_update>

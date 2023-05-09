@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?><database>
     <element db_object_id="b285c1f247a22110f35e7ac8f36d43d2" label="Weather" max_length="40" name="x_141565_helloworl_weather" type="collection">
         <element label="City" max_length="200" name="city" type="string"/>
-        <element display="true" label="Cloud Number" max_length="200" name="cloud_number" type="string"/>
+        <element label="Cloud Number" max_length="200" name="cloud_number" type="string"/>
         <element label="Humidity" max_length="200" name="humidity" type="string"/>
         <element label="Pressure" max_length="200" name="pressure" type="string"/>
         <element label="Temperature" max_length="200" name="temperature" type="string"/>
